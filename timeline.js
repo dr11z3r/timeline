@@ -37,11 +37,15 @@ class TimelineState {
     }
     dataRef(next, rawArgs, args, state) {
         let region = state.program.rawDataRegions[parseInt(args[0]) - 1];
-        if (region == null) throw new Error('invalid ___DATA_REF___ region ref');
+        if (region == null) {
+            throw new Error('Invalid dataRef region reference.');
+        }
         let regionData = region.data.match(/^\s*(js|cmdg?)\s+(.*?)\s*{\s*$/m);
         if (regionData) {
             switch (regionData[1]) {
-                default: throw new Error('unknown dataref command: ' + regionData[1]);
+                default: {
+                    throw new Error('Unknown dataRef command: ' + regionData[1]);
+                }
                 case 'js':
                     {
                         if (state.dataRefCachedFuncs[region.id]) {
@@ -57,9 +61,13 @@ class TimelineState {
                     return;
                 case 'cmdg':
                     {
-                        if (state.depth !== 0) throw new Error('invalid ___DATA_REF___');
+                        if (state.depth !== 0) {
+                            throw new Error('Unexpected dataRef.');
+                        }
                         let name = regionData[2];
-                        if (state.groupCommands[name]) throw new Error('Group command redefinition not allowed! (cmdg=' + name + ')');
+                        if (state.groupCommands[name]) {
+                            throw new Error('Group command redefinition not allowed! (cmdg=' + name + ')');
+                        }
                         if (state.debug) {
                             console.log('Group command definition: %s', name);
                         }
@@ -70,9 +78,13 @@ class TimelineState {
                     break;
                 case 'cmd':
                     {
-                        if (state.depth !== 0) throw new Error('invalid ___DATA_REF___');
+                        if (state.depth !== 0){
+                            throw new Error('Unexpected dataRef.');
+                        }
                         let name = regionData[2];
-                        if (state.commands[name]) throw new Error('Command redefinition not allowed! (cmd=' + name + ')');
+                        if (state.commands[name]) {
+                            throw new Error('Command redefinition not allowed! (cmd=' + name + ')');
+                        }
                         if (state.debug) {
                             console.log('Command definition: %s', name);
                         }
@@ -82,7 +94,9 @@ class TimelineState {
                     }
                     break;
             }
-        } else throw new Error('invalid ___DATA_REF___ region format');
+        } else {
+            throw new Error('Invalid dataRef region format.');
+        }
         next();
     }
     badUsage(next, rawArgs, args, state) {
@@ -109,13 +123,14 @@ class TimelineQueue {
         return this;
     }
     continue() {
-        if (!this.halted) throw new Error('Not in a halted state.');
+        if (!this.halted) {
+            throw new Error('Not in a halted state.');
+        }
         this.halted = false;
         this.haltReason = null;
         this.exec(this.haltContinueExecutionAt);
     }
     halt(reason) {
-        // console.log('Queue %d halted! (reason: %s)', this.id, reason ? reason : 'none provided');
         this.halted = true;
         this.haltReason = reason;
         for (let c of this.children) {
@@ -394,7 +409,9 @@ class TimelineCompiler {
             }
         }
         if (build !== '') args.push(build);
-        if (isInsideString) throw new Error('unterminated "');
+        if (isInsideString) {
+            throw new Error('unterminated "');
+        }
         return args;
     }
     parseExpando(line, state) {
@@ -522,7 +539,9 @@ class TimelineCompiler {
             }
             index++;
         }
-        if (depth !== 0) throw new Error('Unterminated scope.');
+        if (depth !== 0) {
+            throw new Error('Unterminated scope.');
+        }
         return {
             parts: gparts, index, depth, warns,
         }
@@ -565,7 +584,7 @@ class TimelineCompiler {
                 lines[index] = '// (SKIPPED) ' + lines[index];
             } else {
                 // formato } text...
-                // broken quando dentro de rawjs
+                // TODO: broken quando dentro de rawjs
                 let mlf = _line.match(/^(\s*)\}\s*(.+?\{\s*)$/);
                 if (mlf) {
                     _line = mlf[1] + '}\n' + mlf[1] + mlf[2];
@@ -573,9 +592,13 @@ class TimelineCompiler {
                 }
                 else if (_line.startsWith('#include ') || _line.startsWith('include ') || _line.startsWith('use ')) {
                     let srcfile = _line.substring(_line.indexOf(' ')).trim();
-                    if (includes.indexOf(srcfile) !== -1) throw new Error('Multiple includes for the same file.');
+                    if (includes.indexOf(srcfile) !== -1) {
+                        throw new Error('Multiple includes for the same file.');
+                    }
                     includes.push(srcfile);
-                    if (!TimelineCompiler.LIB[srcfile]) throw new Error('Lib not found: ' + srcfile);
+                    if (!TimelineCompiler.LIB[srcfile]) {
+                        throw new Error('Lib not found: ' + srcfile);
+                    }
                     let libsource = typeof TimelineCompiler.LIB[srcfile] == 'string' ? TimelineCompiler.LIB[srcfile] : TimelineCompiler.LIB[srcfile]();
                     let placeholder = '// included file (' + srcfile + ')\n' + libsource + '\n// end included file\n';
                     lines[index] = placeholder;
@@ -645,7 +668,9 @@ class TimelineCompiler {
             }
             i += _line.length + 1;
         }
-        if (isReadingRawData) throw new Error('Syntax Error: unterminated raw data.');
+        if (isReadingRawData) {
+            throw new Error('Syntax Error: unterminated raw data.');
+        }
         lines = source.split(/\r?\n/);
         let head = this.parseGroup(lines);
         warns.push.apply(warns, head.warns);
