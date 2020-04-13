@@ -1,0 +1,11 @@
+{
+  "name": "timeline",
+  "version": "1.0.0",
+  "description": "Scope-based asynchronous scripting language for timeline-based applications",
+  "main": "timeline.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Drizer",
+  "license": "ISC"
+}
