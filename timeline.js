@@ -24,11 +24,11 @@ class TimelineState {
         this.dataRefCachedFuncs = {};
         this.evalRawDataRegionIndex = 1;
     }
-	exec(cmd, rawArgs, next) {
-		(this.commands[cmd] || this.scope[cmd])(() => {
-			next();
-		}, rawArgs, this.instance.parseArgs(rawArgs), this);
-	}
+    exec(cmd, rawArgs, next) {
+        (this.commands[cmd] || this.scope[cmd])(() => {
+            next();
+        }, rawArgs, this.instance.parseArgs(rawArgs), this);
+    }
     currentScope() {
         return this.callStack[this.callStack.length - 1];
     }
@@ -78,7 +78,7 @@ class TimelineState {
                     break;
                 case 'cmd':
                     {
-                        if (state.depth !== 0){
+                        if (state.depth !== 0) {
                             throw new Error('Unexpected dataRef.');
                         }
                         let name = regionData[2];
